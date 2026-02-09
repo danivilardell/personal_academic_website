@@ -1,0 +1,171 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f0f0ee; /* Match the profile image background */
+    color: #333;
+    line-height: 1.6;
+    padding: 2rem;
+}
+
+/* Bio Container: Two-Column Layout */
+.bio-container {
+    display: grid;
+    grid-template-columns: 2fr 1.8fr;
+    gap: 2rem;
+    margin-left: 5rem;
+    margin-right: 1rem;
+    align-items: center;
+    align-content: center; /* center the grid track vertically */
+    height: calc(100vh - 4rem); /* exact centering within viewport minus body padding */
+}
+
+.bio-text h1 {
+    font-size: clamp(3rem, 5vw, 4.5rem); /* Dynamically adjust font size */
+    font-weight: 700;
+    margin-bottom: 1rem;
+    white-space: nowrap; /* Prevent title from breaking into two lines */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.bio-text p {
+    font-size: 1.45rem;
+    margin-bottom: 1.2rem;
+}
+
+.bio-image img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* remove baseline gap under images */
+    border-radius: 8px;
+}
+
+/* Publications Section */
+.publications {
+    margin-top: 4rem;
+    margin-bottom: 2rem;
+    margin-left: 5rem;
+}
+
+.publications h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.publications p {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+
+.publications strong {
+    font-weight: bold;
+}
+
+.publications em {
+    font-style: normal;
+    color: #5e89a9;
+}
+
+/* Contact Section */
+.contact {
+    margin-top: 2rem;
+    text-align: right;
+    margin-right: 1rem;
+}
+
+.contact a {
+    color: #333;
+    text-decoration: none;
+}
+
+.contact a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design for Mid-Sized Screens (Tablets and Small Laptops) */
+@media (max-width: 1200px) and (min-width: 1024px) {
+    .bio-text h1 {
+        font-size: 3.8rem; /* Adjust heading size for this range */
+        white-space: nowrap; /* Prevent wrapping */
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+    /* Single-Column Layout */
+    .bio-container {
+        margin-top: 2rem;
+        margin-bottom: 3rem;
+        grid-template-columns: 1fr; /* One column */
+        margin-left: 2rem;
+        margin-right: 2rem;
+        text-align: center; /* Center text on smaller screens */
+        height: auto;
+    }
+
+    .bio-image {
+        order: -1; /* Display image on top */
+        margin-bottom: -3rem;
+        margin-top: -3rem;
+    }
+
+    .bio-text h1 {
+        font-size: 3rem; /* Adjust font size for smaller screens */
+        white-space: nowrap; /* Ensure single line */
+    }
+
+    .bio-text p {
+        font-size: 1.2rem;
+    }
+
+    .publications {
+        margin-left: 2rem;
+        margin-right: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Adjust Bio Text */
+    .bio-text h1 {
+        font-size: 2.2rem; /* Smaller heading */
+        margin-bottom: 1.4rem; /* Less space below heading */
+        white-space: nowrap; /* Ensure single line */
+    }
+
+    .bio-text p {
+        font-size: 0.9rem; /* Smaller paragraph text */
+        margin-bottom: 0rem; /* Reduce space between paragraphs */
+    }
+
+    /* Adjust Publications Section */
+    .publications h2 {
+        font-size: 1.5rem; /* Smaller section heading */
+        margin-bottom: 1rem; /* Reduce space below heading */
+    }
+
+    .publications p {
+        font-size: 0.8rem; /* Smaller publication text */
+        margin-bottom: 1rem; /* Reduce space between publication entries */
+    }
+
+    /* Adjust Contact Section */
+    .contact {
+        text-align: center;
+        margin-right: 0;
+    }
+
+    /* Reduce Body Padding */
+    body {
+        padding: 1rem; /* Reduce padding for smaller screens */
+    }
+}
