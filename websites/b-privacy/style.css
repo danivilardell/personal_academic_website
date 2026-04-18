@@ -275,7 +275,7 @@ a:hover {
 /* ---------- Deanonymize Demo ---------- */
 
 #deanonymize .deanon {
-  --unit: clamp(16px, 4.8vw, 44px);
+  --unit: clamp(10px, 3.2vw, 32px);
   --color-a: #1d3a5f;
   --color-b: #9b3a1c;
   margin-top: 28px;
@@ -413,10 +413,33 @@ a:hover {
   letter-spacing: 0.02em;
 }
 .ledger-chip[data-step="1"] em,
-.ledger-chip[data-step="3"] em { background: var(--color-a); }
+.ledger-chip[data-step="4"] em,
+.ledger-chip[data-step="5"] em { background: var(--color-a); }
 .ledger-chip[data-step="2"] em,
-.ledger-chip[data-step="4"] em { background: var(--color-b); }
+.ledger-chip[data-step="3"] em { background: var(--color-b); }
 .ledger-chip.shown { opacity: 1; transform: translateY(0); }
+
+.narration .attack-tag {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f3ecd6;
+  color: var(--accent);
+  margin-right: 9px;
+  vertical-align: 2px;
+}
+.narration .attack-tag.whale {
+  background: #f5e0d6;
+  color: var(--color-b);
+}
+.narration .attack-tag.precision {
+  background: #e4ecf5;
+  color: var(--color-a);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .seg, .ledger-chip, .narration .step {

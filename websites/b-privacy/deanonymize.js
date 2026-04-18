@@ -3,10 +3,11 @@
   if (!root) return;
 
   const sequence = [
-    { bar: 'a', weight: 7 },
-    { bar: 'b', weight: 3 },
-    { bar: 'a', weight: 2 },
-    { bar: 'b', weight: 1 }
+    { bar: 'a', weight: 12 },
+    { bar: 'b', weight: 7 },
+    { bar: 'b', weight: 4 },
+    { bar: 'a', weight: 3 },
+    { bar: 'a', weight: 2 }
   ];
 
   const REVEAL_TO_REMOVE = 2200;
@@ -24,7 +25,7 @@
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let timers = [];
-  let remaining = { a: 9, b: 4 };
+  let remaining = { a: 17, b: 11 };
   let running = false;
   let cancelled = false;
 
@@ -47,11 +48,11 @@
   }
 
   function resetVisuals() {
-    remaining = { a: 9, b: 4 };
+    remaining = { a: 17, b: 11 };
     root.querySelectorAll('.seg').forEach(s => s.classList.remove('revealed', 'removed'));
     ledgerChips.forEach(c => c.classList.remove('shown'));
-    totalEl.a.textContent = '9';
-    totalEl.b.textContent = '4';
+    totalEl.a.textContent = '17';
+    totalEl.b.textContent = '11';
     setStep(0);
   }
 
