@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B-Privacy: Defining and Enforcing Privacy in Weighted Voting</title>
+  <meta name="description" content="B-Privacy is a privacy framework for weighted voting that measures the economic cost of bribery under revealed tallies." />
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="deanonymize.js" defer></script>
+  <script src="plot_data.js" defer></script>
+  <script src="plots.js" defer></script>
+</head>
+<body>
+  <main class="page">
+
+    <header class="hero">
+      <div class="brand">
+        <img src="logo.svg" alt="B-Privacy logo" class="logo" />
+        <span class="brand-name">B&#8209;Privacy</span>
+      </div>
+
+      <h1 class="title">Defining and Enforcing Privacy in Weighted Voting</h1>
+
+      <p class="authors">
+        <a href="#">Samuel Breckenridge</a><sup>*1</sup>,
+        <a href="#">Dani Vilardell</a><sup>*1</sup>,
+        <a href="#">Andr&eacute;s F&aacute;brega</a><sup>1</sup>,
+        <a href="#">Amy Zhao</a><sup>1</sup>,
+        <a href="#">Patrick McCorry</a><sup>2</sup>,
+        <a href="#">Rafael Solari</a><sup>1</sup>,
+        <a href="#">Ari Juels</a><sup>1</sup>
+      </p>
+
+      <p class="affiliations">
+        <sup>1</sup>Cornell Tech &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+        <sup>2</sup>Infura &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+        <span class="equal-contrib"><sup>*</sup>Equal contribution</span>
+      </p>
+
+      <p class="venue">arXiv:2509.17871 &nbsp;&middot;&nbsp; September 2025</p>
+
+      <nav class="actions">
+        <a class="btn btn-primary" href="https://arxiv.org/pdf/2509.17871" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Paper
+        </a>
+        <a class="btn" href="https://arxiv.org/abs/2509.17871" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          arXiv
+        </a>
+        <a class="btn" href="#bibtex">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          BibTeX
+        </a>
+      </nav>
+    </header>
+
+    <section class="section">
+      <h2>Abstract</h2>
+      <p>
+        Weighted-voting systems underpin governance in DAOs and other
+        blockchain-based platforms. Conventional ballot secrecy is not
+        enough in these settings: publishing raw tallies can often reveal
+        how individual voters cast their ballots. We introduce
+        <strong>B&#8209;privacy</strong>, a framework that captures the
+        transparency&ndash;privacy tradeoff through the lens of
+        <em>bribery economics</em>, measuring the economic cost for an
+        adversary to bribe voters to change the outcome, given what a
+        published tally reveals.
+      </p>
+      <p>
+        We propose a mechanism that adds noise to tallies to enforce
+        B&#8209;privacy, and analyze <strong>3,582 proposals across 30
+        DAOs</strong>. We find that voter concentration fundamentally
+        limits achievable privacy: when outcomes hinge on whales, little
+        can be hidden. Yet for proposals whose outcomes require
+        coalitions of five or more voters, our mechanism delivers a
+        geometric&nbsp;mean <strong>4.1&times; increase</strong> in
+        bribery cost.
+      </p>
+    </section>
+
+    <section class="section" id="deanonymize">
+      <h2>How a tally betrays the ballot</h2>
+      <p>
+        Suppose an election closes with <strong>9 in favor and 4 against</strong>,
+        cast by four voters:
+        <strong>Alice</strong> (weight&nbsp;7),
+        <strong>Bob</strong> (weight&nbsp;3),
+        <strong>Carol</strong> (weight&nbsp;2), and
+        <strong>Dave</strong> (weight&nbsp;1).
+        The totals alone force every ballot into the open &mdash; step by step.
+      </p>
+
+      <div class="deanon" role="region" aria-label="Deanonymization demonstration">
+        <div class="bars">
+          <div class="row">
+            <div class="row-label">In favour</div>
+            <div class="bar bar-a">
+              <div class="seg" data-weight="7" style="--w: 7"><span class="w">7</span></div>
+              <div class="seg" data-weight="2" style="--w: 2"><span class="w">2</span></div>
+            </div>
+            <div class="row-total">9</div>
+          </div>
+          <div class="row">
+            <div class="row-label">Against</div>
+            <div class="bar bar-b">
+              <div class="seg" data-weight="3" style="--w: 3"><span class="w">3</span></div>
+              <div class="seg" data-weight="1" style="--w: 1"><span class="w">1</span></div>
+            </div>
+            <div class="row-total">4</div>
+          </div>
+        </div>
+
+        <div class="narration" aria-live="polite">
+          <p class="step active" data-step="0">Four ballots, two totals. Alice, Bob, Carol, and Dave cast in secret &mdash; but who voted for what?</p>
+          <p class="step" data-step="1"><b>Alice</b>&rsquo;s weight of 7 can&rsquo;t fit inside a total of 4. &rarr; <span class="vote-a">In favour</span>.</p>
+          <p class="step" data-step="2">Only 2 room left on the favour side. <b>Bob</b>&rsquo;s 3 won&rsquo;t fit. &rarr; <span class="vote-b">Against</span>.</p>
+          <p class="step" data-step="3">Favour still needs exactly 2. <b>Carol</b>&rsquo;s 2 fills it. &rarr; <span class="vote-a">In favour</span>.</p>
+          <p class="step" data-step="4">Against needs 1 more. <b>Dave</b>&rsquo;s 1 completes it. &rarr; <span class="vote-b">Against</span>. <em>Every ballot exposed.</em></p>
+        </div>
+
+        <div class="ledger" aria-label="Revealed ballots">
+          <div class="ledger-chip" data-step="1"><span><b>Alice</b> &middot; w=7</span><em>In favour</em></div>
+          <div class="ledger-chip" data-step="2"><span><b>Bob</b> &middot; w=3</span><em>Against</em></div>
+          <div class="ledger-chip" data-step="3"><span><b>Carol</b> &middot; w=2</span><em>In favour</em></div>
+          <div class="ledger-chip" data-step="4"><span><b>Dave</b> &middot; w=1</span><em>Against</em></div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section" id="dao-attack">
+      <h2>The attack, in the wild</h2>
+      <p>
+        We ran the same deduction across <strong>3,582 proposals from 30
+        DAOs</strong>. Each bubble below is one DAO &mdash; positioned by
+        the average share of ballots and voting weight an attacker can
+        recover from the raw tally alone. Bubble size encodes the average
+        number of voters per proposal.
+      </p>
+
+      <div class="aggregate-plot-wrap">
+        <div class="aggregate-plot" data-plot="aggregate" aria-label="Per-DAO aggregate deanonymization"></div>
+      </div>
+
+      <p class="caption">
+        Even on average, many DAOs leak a substantial fraction of voting
+        weight. The four highlighted DAOs anchor the discussion that
+        follows.
+      </p>
+    </section>
+
+    <section class="section" id="noise-defense">
+      <h2>Noise as a defense</h2>
+      <p>
+        B&#8209;privacy publishes a <em>noised</em> tally instead of the
+        raw count: a small amount of calibrated randomness is added to
+        each option&rsquo;s total. The outcome stays correct in expectation,
+        but the deduction chain breaks &mdash; the attacker can no longer
+        be sure which weight went where.
+      </p>
+      <p>
+        Each bubble below is one DAO; size encodes the average number of
+        voters per proposal. Bubbles start at the
+        <strong>raw&nbsp;tally</strong> attack rate and animate to their
+        position under the <strong>noised tally</strong>.
+      </p>
+
+      <div class="noise-plot-wrap">
+        <div class="noise-plot" data-plot="noise" aria-label="Noise impact comparison"></div>
+        <div class="noise-legend">
+          <span><span class="dot dot-raw"></span>Raw tally</span>
+          <span><span class="dot dot-noise"></span>Noised tally</span>
+          <span><span class="line-arrow"></span>Noise impact</span>
+        </div>
+      </div>
+
+      <p class="caption">
+        Bubbles slide down and to the left: noise reduces both the
+        fraction of ballots leaked and the fraction of voting weight
+        leaked.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Key Ideas</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Bribery as a yardstick</h3>
+          <p>
+            Privacy is measured not by what an observer learns, but by
+            how expensive it becomes to shift an election outcome under
+            the revealed tally.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Noisy tallies</h3>
+          <p>
+            A calibrated noise mechanism blurs vote totals just enough
+            to raise bribery cost while preserving verifiable outcomes.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Whales break privacy</h3>
+          <p>
+            Empirically, highly concentrated voting power caps what any
+            tally-level mechanism can hide &mdash; an intrinsic limit,
+            not an engineering one.
+          </p>
+        </article>
+        <article class="card">
+          <h3>Real-world gains</h3>
+          <p>
+            On proposals decided by small coalitions, B&#8209;privacy
+            raises the cost of outcome-changing bribery by a geometric
+            mean of <strong>4.1&times;</strong>.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section figure-section">
+      <h2>The Framework at a Glance</h2>
+      <figure class="diagram">
+        <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: votes feed into a noisy tally; adversary faces bribery cost">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#1a1a1a"/>
+            </marker>
+          </defs>
+
+          <g font-family="Inter, sans-serif" font-size="12" fill="#1a1a1a">
+            <g transform="translate(30,60)">
+              <rect width="140" height="140" rx="10" fill="#f5f0e6" stroke="#1a1a1a" stroke-width="1.5"/>
+              <text x="70" y="26" text-anchor="middle" font-weight="600">Weighted Votes</text>
+              <circle cx="32" cy="60" r="10" fill="#1a1a1a"/>
+              <circle cx="60" cy="70" r="16" fill="#1a1a1a"/>
+              <circle cx="96" cy="58" r="22" fill="#c9a24a"/>
+              <circle cx="40" cy="100" r="8" fill="#1a1a1a"/>
+              <circle cx="78" cy="108" r="12" fill="#1a1a1a"/>
+              <circle cx="112" cy="104" r="10" fill="#1a1a1a"/>
+            </g>
+
+            <g transform="translate(290,60)">
+              <rect width="140" height="140" rx="10" fill="#1a1a1a"/>
+              <text x="70" y="26" text-anchor="middle" fill="#f5f0e6" font-weight="600">B&#8209;Privacy</text>
+              <text x="70" y="46" text-anchor="middle" fill="#c9a24a" font-size="10">noise mechanism</text>
+              <g stroke="#f5f0e6" stroke-width="1.5" fill="none">
+                <path d="M20 90 Q40 70 60 90 T100 90 T140 90" opacity="0.6"/>
+                <path d="M20 100 Q40 80 60 100 T100 100 T140 100" opacity="0.9"/>
+                <path d="M20 110 Q40 130 60 110 T100 110 T140 110" opacity="0.6"/>
+              </g>
+            </g>
+
+            <g transform="translate(550,60)">
+              <rect width="140" height="140" rx="10" fill="#f5f0e6" stroke="#1a1a1a" stroke-width="1.5"/>
+              <text x="70" y="26" text-anchor="middle" font-weight="600">Bribery Cost</text>
+              <text x="70" y="86" text-anchor="middle" font-size="34" font-weight="600" fill="#1a1a1a">$</text>
+              <text x="70" y="118" text-anchor="middle" font-size="11" fill="#1a1a1a">adversary&rsquo;s budget</text>
+            </g>
+
+            <line x1="175" y1="130" x2="285" y2="130" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <line x1="435" y1="130" x2="545" y2="130" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+            <text x="230" y="120" text-anchor="middle" font-size="11" fill="#555">tally</text>
+            <text x="490" y="120" text-anchor="middle" font-size="11" fill="#555">bound</text>
+          </g>
+        </svg>
+        <figcaption>
+          Weighted votes pass through the B&#8209;privacy mechanism,
+          which publishes a noisy tally. An adversary&rsquo;s cost to
+          bribe the outcome is lower-bounded by what the tally still
+          reveals.
+        </figcaption>
+      </figure>
+    </section>
+
+    <section class="section" id="bibtex">
+      <h2>Citation</h2>
+      <pre class="bibtex"><code>@article{breckenridge2025bprivacy,
+  title   = {B-Privacy: Defining and Enforcing Privacy in Weighted Voting},
+  author  = {Breckenridge, Samuel and Vilardell, Dani and F{\'a}brega, Andr{\'e}s
+             and Zhao, Amy and McCorry, Patrick and Solari, Rafael and Juels, Ari},
+  journal = {arXiv preprint arXiv:2509.17871},
+  year    = {2025}
+}</code></pre>
+    </section>
+
+    <footer class="footer">
+      <p>&copy; 2025 The B&#8209;Privacy authors &middot; Released under CC&#8209;BY&#8209;4.0</p>
+    </footer>
+
+  </main>
+</body>
+</html>
