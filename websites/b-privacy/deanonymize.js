@@ -3,11 +3,22 @@
   if (!root) return;
 
   const sequence = [
-    { bar: 'a', weight: 12 },
-    { bar: 'b', weight: 7 },
-    { bar: 'b', weight: 4 },
-    { bar: 'a', weight: 3 },
-    { bar: 'a', weight: 2 }
+    {
+      narration: 1,
+      reveals: [{ bar: 'a', weight: 12, chip: 0 }]
+    },
+    {
+      narration: 2,
+      reveals: [{ bar: 'b', weight: 7, chip: 1 }]
+    },
+    {
+      narration: 3,
+      reveals: [
+        { bar: 'b', weight: 4, chip: 2 },
+        { bar: 'a', weight: 3, chip: 3 },
+        { bar: 'a', weight: 2, chip: 4 }
+      ]
+    }
   ];
 
   const REVEAL_TO_REMOVE = 2200;
@@ -56,38 +67,46 @@
     setStep(0);
   }
 
+  function nextSeg(bar) {
+    return root.querySelector('.bar-' + bar + ' .seg:not(.revealed)');
+  }
+
   function showFinalState() {
     resetVisuals();
-    sequence.forEach((step, i) => {
-      const bar = root.querySelector('.bar-' + step.bar);
-      const seg = bar.querySelector('.seg:not(.revealed)');
-      if (seg) seg.classList.add('revealed', 'removed');
-      remaining[step.bar] -= step.weight;
-      ledgerChips[i].classList.add('shown');
+    sequence.forEach(tick => {
+      tick.reveals.forEach(r => {
+        const seg = nextSeg(r.bar);
+        if (seg) seg.classList.add('revealed', 'removed');
+        remaining[r.bar] -= r.weight;
+        ledgerChips[r.chip].classList.add('shown');
+      });
     });
     totalEl.a.textContent = remaining.a;
     totalEl.b.textContent = remaining.b;
-    setStep(sequence.length);
+    setStep(sequence[sequence.length - 1].narration);
   }
 
-  function revealStep(i) {
+  function revealTick(i) {
     if (cancelled || i >= sequence.length) return;
-    const step = sequence[i];
-    const bar = root.querySelector('.bar-' + step.bar);
-    const seg = bar.querySelector('.seg:not(.revealed)');
-    if (!seg) return;
+    const tick = sequence[i];
 
-    seg.classList.add('revealed');
-    setStep(i + 1);
+    const segs = tick.reveals.map(r => {
+      const seg = nextSeg(r.bar);
+      if (seg) seg.classList.add('revealed');
+      return { r, seg };
+    });
+    setStep(tick.narration);
 
     schedule(() => {
-      seg.classList.add('removed');
-      remaining[step.bar] -= step.weight;
-      totalEl[step.bar].textContent = remaining[step.bar];
-      ledgerChips[i].classList.add('shown');
+      segs.forEach(({ r, seg }) => {
+        if (seg) seg.classList.add('removed');
+        remaining[r.bar] -= r.weight;
+        totalEl[r.bar].textContent = remaining[r.bar];
+        ledgerChips[r.chip].classList.add('shown');
+      });
 
       if (i + 1 < sequence.length) {
-        schedule(() => revealStep(i + 1), BETWEEN_STEPS);
+        schedule(() => revealTick(i + 1), BETWEEN_STEPS);
       } else {
         schedule(cycle, FINAL_HOLD);
       }
@@ -97,7 +116,7 @@
   function cycle() {
     if (cancelled) return;
     resetVisuals();
-    schedule(() => revealStep(0), CYCLE_GAP);
+    schedule(() => revealTick(0), CYCLE_GAP);
   }
 
   function play() {
@@ -106,7 +125,7 @@
     cancelled = false;
     if (prefersReduced) { showFinalState(); return; }
     resetVisuals();
-    schedule(() => revealStep(0), INITIAL_DELAY);
+    schedule(() => revealTick(0), INITIAL_DELAY);
   }
 
   function pause() {

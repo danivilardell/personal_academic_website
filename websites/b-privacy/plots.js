@@ -125,7 +125,12 @@
   }
 
   // ---------- HTML bubble-size legend ----------
-  function buildBubbleLegend(sc, RMIN, RMAX, title) {
+  // SVG is authored at viewBox width SVG_VIEW_W and scales to fit the container via
+  // preserveAspectRatio. The legend dots are plain HTML, so we must multiply their
+  // radii by the live render scale (containerWidth / SVG_VIEW_W) to match the plot.
+  const SVG_VIEW_W = 720;
+
+  function buildBubbleLegend(sc, RMIN, RMAX, title, svgHost) {
     const wrap = document.createElement('div');
     wrap.className = 'bubble-legend';
 
@@ -143,15 +148,14 @@
       { v: 10000, label: '10k' },
       { v: 100000, label: '100k' }
     ];
+    const dots = [];
     samples.forEach(s => {
       const r = rOf(s.v, sc, RMIN, RMAX);
       const item = document.createElement('div');
       item.className = 'bubble-legend-item';
       const dot = document.createElement('span');
       dot.className = 'bubble-legend-dot';
-      const d = (r * 2);
-      dot.style.width = d + 'px';
-      dot.style.height = d + 'px';
+      dots.push({ dot, r });
       const lbl = document.createElement('span');
       lbl.className = 'bubble-legend-label';
       lbl.textContent = s.label;
@@ -160,6 +164,24 @@
       items.appendChild(item);
     });
     wrap.appendChild(items);
+
+    function applyScale() {
+      const w = svgHost ? svgHost.getBoundingClientRect().width : SVG_VIEW_W;
+      const scale = w > 0 ? w / SVG_VIEW_W : 1;
+      dots.forEach(({ dot, r }) => {
+        const d = Math.max(4, r * 2 * scale);
+        dot.style.width = d + 'px';
+        dot.style.height = d + 'px';
+      });
+    }
+    applyScale();
+
+    if (svgHost && 'ResizeObserver' in window) {
+      const ro = new ResizeObserver(applyScale);
+      ro.observe(svgHost);
+    } else if (svgHost) {
+      window.addEventListener('resize', applyScale);
+    }
     return wrap;
   }
 
@@ -169,7 +191,7 @@
     container.classList.add('plot-host');
 
     const W = 720, H = 440;
-    const ML = 64, MR = 24, MT = 18, MB = 56;
+    const ML = 64, MR = 48, MT = 40, MB = 56;
     const innerW = W - ML - MR;
     const innerH = H - MT - MB;
 
@@ -217,7 +239,7 @@
     plotArea.appendChild(svg);
     plotArea.appendChild(tip);
     container.appendChild(plotArea);
-    container.appendChild(buildBubbleLegend(sc, RMIN, RMAX, 'Mean voters per proposal'));
+    container.appendChild(buildBubbleLegend(sc, RMIN, RMAX, 'Mean voters per proposal', svg));
   }
 
   // ---------- Noise comparison ----------
@@ -226,7 +248,7 @@
     container.classList.add('plot-host');
 
     const W = 720, H = 440;
-    const ML = 64, MR = 24, MT = 18, MB = 56;
+    const ML = 64, MR = 48, MT = 40, MB = 56;
     const innerW = W - ML - MR;
     const innerH = H - MT - MB;
 
@@ -255,6 +277,43 @@
     const gGhost = el('g', { class: 'ghost-layer' }, svg);
     const gArrow = el('g', { class: 'arrow-layer' }, svg);
     const gBubble = el('g', { class: 'bubble-layer' }, svg);
+
+    const labelRightEdge = ML + innerW - 56;
+    const labelY = MT + innerH - 68;
+    function makePhaseLabel(text, cls) {
+      const g = el('g', { class: 'phase-label ' + cls }, svg);
+      const rect = el('rect', {
+        rx: 999, ry: 999,
+        class: 'phase-label-bg'
+      }, g);
+      const t = el('text', {
+        y: labelY,
+        'text-anchor': 'middle',
+        'dominant-baseline': 'middle',
+        class: 'phase-label-text'
+      }, g);
+      t.textContent = text;
+      return { g, rect, t };
+    }
+    const labelRaw = makePhaseLabel('Raw tally', 'phase-label-raw');
+    const labelNoise = makePhaseLabel('Noised tally', 'phase-label-noise');
+    requestAnimationFrame(() => {
+      const bbR = labelRaw.t.getBBox();
+      const bbN = labelNoise.t.getBBox();
+      const padX = 22, padY = 10;
+      const width = Math.max(bbR.width, bbN.width) + padX * 2;
+      const height = Math.max(bbR.height, bbN.height) + padY * 2;
+      const rectX = labelRightEdge - width;
+      const centerX = rectX + width / 2;
+      const rectY = labelY - height / 2;
+      [labelRaw, labelNoise].forEach(({ rect, t }) => {
+        rect.setAttribute('x', rectX);
+        rect.setAttribute('y', rectY);
+        rect.setAttribute('width', width);
+        rect.setAttribute('height', height);
+        t.setAttribute('x', centerX);
+      });
+    });
 
     const tip = makeTooltip();
 
@@ -300,12 +359,12 @@
     plotArea.appendChild(svg);
     plotArea.appendChild(tip);
     container.appendChild(plotArea);
-    container.appendChild(buildBubbleLegend(sc, RMIN, RMAX, 'Mean voters per proposal'));
+    container.appendChild(buildBubbleLegend(sc, RMIN, RMAX, 'Mean voters per proposal', svg));
 
     // ---------- Animation loop ----------
-    const PHASE_HOLD_RAW = 1100;
+    const PHASE_HOLD_RAW = 2500;
     const PHASE_TRANSITION = 1900;
-    const PHASE_HOLD_NOISE = 3200;
+    const PHASE_HOLD_NOISE = 3500;
 
     let timer = null;
     let cancelled = false;
@@ -328,6 +387,8 @@
           it.arrow.setAttribute('stroke-opacity', '0');
         }
       });
+      labelRaw.g.classList.add('on');
+      labelNoise.g.classList.remove('on');
     }
     function setNoise() {
       items.forEach(it => {
@@ -342,10 +403,14 @@
           it.arrow.setAttribute('stroke-opacity', '0.45');
         }
       });
+      labelNoise.g.classList.add('on');
+      labelRaw.g.classList.remove('on');
     }
+    let firstRun = true;
     function loopOnce() {
       if (cancelled) return;
-      setRaw(false);
+      setRaw(!firstRun);
+      firstRun = false;
       void container.offsetHeight;
       timer = setTimeout(() => {
         if (cancelled) return;
