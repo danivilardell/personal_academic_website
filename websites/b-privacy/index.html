@@ -14,6 +14,7 @@
   <script src="plot_data.js" defer></script>
   <script src="plots.js" defer></script>
   <script src="bprivacy_game.js" defer></script>
+  <script src="dao_plot.js" defer></script>
 </head>
 <body>
   <main class="page">
@@ -66,16 +67,31 @@
     <section class="section abstract">
     <h2>Abstract</h2>
     <div class="abstract-body">
-    <p>
-      In traditional one-vote-per-person systems, privacy means <em>ballot secrecy</em>: tallies are public, but individual choices stay hidden. Weighted-voting systems, now common in cryptocurrency and web3, break this assumption. We show that <em>publishing raw tallies often reveals how individuals voted, even with secret ballots</em>.
+    <!-- <p>
+      In traditional one-vote-per-person voting systems, privacy means <em>ballot secrecy</em>: tallies are public, but individual choices stay hidden. Weighted-voting systems, now common in cryptocurrency and web3, break this assumption. We show that <em>publishing raw tallies often reveals how individuals voted, even with secret ballots</em>.
     </p>
     <p>
       Weighted voting therefore needs a new privacy framework. We introduce <strong>B-privacy</strong>, which measures the economic cost for an adversary to bribe voters based on revealed tallies, and propose a mechanism that boosts B-privacy by noising tallies, with provable security bounds on the tradeoff against <em>transparency</em> (tally accuracy).
     </p>
     <p>
       Analyzing 3,582 proposals across 30 DAOs, we find that large voters (<em>"whales"</em>) fundamentally limit any mechanism aimed at increasing B-privacy. Still, for proposals with lower weight concentration, our mechanism raises B-privacy by a geometric mean factor of <strong>4.1×</strong> with low transparency loss, offering the first principled guidance on transparency-privacy tradeoffs in weighted voting.
+    </p> -->
+    <p>
+    In traditional, one-vote-per-person voting systems, <em>privacy</em> equates with <em>ballot secrecy</em>: voting tallies are published, but individual voters’ choices are concealed.
     </p>
-    </div>
+    <p>
+    Voting systems that weight votes in proportion to token holdings, though, are now prevalent in cryptocurrency and web3 systems. We show that these weighted-voting systems overturn existing notions of voter privacy. Our experiments demonstrate that even with secret ballots, <em>publishing raw tallies often reveals voters’ choices</em>.
+    </p>
+    <p>
+    Weighted voting thus requires a new framework for privacy. We introduce a notion called <strong>B-privacy</strong> whose basis is bribery, a key problem in voting systems today. B-privacy captures the economic cost to an adversary of bribing voters based on revealed voting tallies.
+    </p>
+    <p>
+    We propose a mechanism to boost B-privacy by <em>noising</em> voting tallies. We prove bounds on its tradeoff between B-privacy and transparency, meaning reported-tally accuracy. Analyzing 3,582 proposals across 30 Decentralized Autonomous Organizations (DAOs), we find that the prevalence of large voters (“whales”) limits the effectiveness of any B-Privacy-enhancing technique. However, our mechanism proves to be effective in cases without extreme voting weight concentration: among proposals requiring coalitions of ≥5 voters to flip outcomes, our mechanism raises B-privacy by a geometric mean factor of <strong>4.1×</strong>.
+    </p>
+    <p>
+    Our work offers the first principled guidance on transparency-privacy tradeoffs in weighted-voting systems, complementing existing approaches that focus on ballot secrecy and revealing fundamental constraints that voting weight concentration imposes on privacy mechanisms.
+    </p>
+  </div>
       <!-- <p>
         Weighted-voting systems underpin governance in DAOs and other
         blockchain-based platforms. Conventional ballot secrecy is not
@@ -174,11 +190,10 @@
     <section class="section" id="noise-defense">
       <h2>Noise as a defense</h2>
       <p>
-        A straightforward solution to those attacks is to publish a <em>noised</em> tally instead of the
-        raw count: a small amount of calibrated randomness is added to
-        each option&rsquo;s total. While if done correctly the outcome stays the same,
-        the noise shifts the result so the attacker can no longer
-        be sure which weight went where with 100% confidence.
+          A straightforward fix is to publish only the <em>winner</em> of the election rather than the full tally. This eliminates the leakage but however would sacrifice transparency, omitting critical statistics—such as the margin of victory and the rate of voter participation—that are non-negotiable for achieving trust in governance.
+      </p>
+      <p>
+          A better approach is to publish a <em>noised</em> tally: a small amount of calibrated randomness is added to each option's total. Done correctly, the reported winner stays the same, but the noise blurs the exact counts enough that an attacker can no longer pin down with certainty which voter's weight went where.
       </p>
       <p>
         We ran the same deanonymization attack on noised tallies, and found that noise 
@@ -206,10 +221,16 @@
     <section class="section" id="bprivacy-game">
       <h2>Privacy as bribery cost</h2>
       <p>
-        The whale and precision attacks show that tallies can leak, but they are only heuristics. They don't tell us what the <em>strongest</em> adversary can do against a given disclosure rule. For that, we need a well-defined privacy notion. Existing definitions in the token-weighted setting diverge sharply depending on whether they focus on leaked weights or leaked ballots, so we propose a definition that instead captures leakage through its <em>impact on the election</em>: the more a tally reveals, the cheaper it becomes for an adversary to bribe voters into flipping the outcome.
+        The whale and precision attacks show that tallies can leak, but they are only heuristics. They don't tell us what the <em>strongest</em> adversary can do against a given tally. For that, we need a well-defined privacy notion. 
       </p>
       <p>
-        <strong>B&#8209;privacy</strong> is the minimum total bribe an adversary must commit to flip an outcome with high confidence, given only what the published tally reveals. Bribes are enforceable only when the adversary can verify compliance from the tally, so the disclosure rule directly sets the price of influence.
+        Existing definitions in the token-weighted setting diverge sharply depending on whether they focus on leaked weights or leaked ballots, which we have seen can be completely uncorrelated. We instead propose a privacy definition that instead captures leakage through its <em>impact on the election integrity</em>: the more a tally reveals, the easier it is for an adversary to bribe voters into flipping the outcome.
+      </p>
+      <p>
+        <strong>B&#8209;privacy</strong> is the minimum total bribe an adversary must commit to flip an outcome with high confidence, given only what the published tally reveals. An adversary can only condition the bribes on the information revealed by the tally. As seen in the previous section, when adding noise, it is harder for the adversary to know how a specific voter voted, making it harder to verify whether a voter complied with the contract. This uncertainty translates into extra cost for the adversary to successfully overturn the election, and is reflected in a higher B-privacy.
+      </p>
+      <p>
+        We can see below how an adversary would strategize to bribe a specific voter in three different elections with different tally disclosures. One that reveals the exact tally with the individual ballots, another that only reveals the winner, and a third one that reveals a noised tally.
       </p>
 
       <div class="bribe-lab" aria-label="Bribery game in three tally regimes">
@@ -273,7 +294,7 @@
           <article class="bribe-cell" data-mode="private">
             <header>
               <h3>Winner&#8209;only</h3>
-              <p class="bribe-sub">Only the winning option is announced.</p>
+              <p class="bribe-sub">Only the winning option is revealed.</p>
             </header>
             <div class="actors">
               <div class="actor actor-adv">
@@ -295,24 +316,32 @@
       </div>
 
       <p class="caption">
-        Same bribe, three tallies. The disclosure rule chooses the
-        contract the adversary can enforce &mdash; and therefore the price
-        of corruption. Even though the bribe was the same, Alice only chose to comply
-        when the bribe was enforceable under the public tally. 
+        This example showcases the tradeoff between transparency and privacy in token weighted elections. The less information reported as an election result, the higher B-Privacy. However, less information also means less transparency, which can undermine trust in the election process.
       </p>
     </section>
+
+    <section class="section" id="dao-comparison">
+      <h2>B&#8209;Privacy Across DAOs</h2>
+      <p>
+        We compute B-Privacy across multiple DAOs to understand how the choice of the tally disclosure mechanism affects privacy. The chart below shows the relative B-Privacy, that is, the ratio of B-Privacy under a given mechanism to B-Privacy under a raw tally (where there is no privacy), for two tally disclosure mechanisms: only revealing the winner and revealing a noised tally. Each row represents a DAO, and each dot represents the B-Privacy for that DAO under the corresponding mechanism. The baseline (dashed line) represents the raw tally case, where relative B-Privacy is 1.
+      </p>
+      <div class="dao-plot-wrap">
+        <div class="dao-plot" id="dao-chart"></div>
+        <p class="caption">
+          B-privacy factor for 10 representative DAOs, ranging from those with minimal privacy benefits (balancer, curve) to extreme cases (aavegotchi, shellprotocol). Red dots show Winner-Only voting; green dots show Tally Perturbation 10% noising. The baseline (dashed line) represents full-disclosure voting with no privacy. 
+        </p>
+      </div>
+    </section>
+
+    <p>
+      The divergence between DAOs with respect to B-Privacy largely rests on the differences in voting weight concentration: DAOs with less concentrated voting power (e.g., aavegotchi) see much higher B-Privacy improvements from noise, while DAOs with more concentrated voting power (e.g., balancer) see almost no privacy improvements when adding noise.
+    </p>
 
 
     <section class="section" id="aavegotchi-results">
       <h2>Case study: B&#8209;Privacy in Aavegotchi</h2>
       <p>
-        To see how B&#8209;privacy behaves on real governance data, we
-        analyse <strong>250 proposals from the Aavegotchi DAO</strong> and
-        measure how relative B&#8209;privacy responds to tally
-        perturbation. We group proposals by their <em>Minimum Decisive
-        Coalition</em> (MDC) &mdash; the smallest set of voters whose
-        combined weight could have changed the outcome &mdash; because
-        proposals with larger MDCs are inherently harder to corrupt.
+        To see how B&#8209;privacy behaves on real governance data, we analyse <strong>250 proposals from the Aavegotchi DAO</strong> and measure how relative B&#8209;privacy responds to tally perturbation. We group proposals by their <em>Minimum Decisive Coalition</em> (MDC) &mdash; the smallest set of voters whose combined weight could have changed the outcome &mdash; because proposals with larger MDCs are inherently harder to corrupt. This metric indirectly captures weight concentration, and allows us to see that proposals with lower weight concentration (e.g. no whales) see much higher B-Privacy improvements from noise.
       </p>
 
       <figure class="aave-figure">
@@ -330,30 +359,23 @@
       </figure>
 
       <p class="caption">
-        Even modest noise pays off: across proposals with MDC&nbsp;&ge;&nbsp;5,
-        the geometric mean of relative B&#8209;privacy improves by
-        <strong>&times;4.1</strong>. For elections with less concentrated voting power, 
-        noise can substantially increase the cost of bribery with <strong>&times;1000</strong> 
-        from just a 2% perturbation in proposals with MDC&nbsp;&ge;&nbsp;30.
+        We see here that the main factor that affects the B-Privacy is the weight distribution. In proposals with low voter concentration, even modest noise pays greatly increases the B-Privacy of the system. For elections with more concentrated voting power, 
+        noise has a weaker effect.
       </p>
     </section>
 
 
     <section class="section" id="bibtex">
       <h2>Citation</h2>
-      <pre class="bibtex"><code>@article{breckenridge2025bprivacy,
-  title   = {B-Privacy: Defining and Enforcing Privacy in Weighted Voting},
-  author  = {Breckenridge, Samuel and Vilardell, Dani and F{\'a}brega, Andr{\'e}s
-             and Zhao, Amy and McCorry, Patrick and Solari, Rafael and Juels, Ari},
-  journal = {arXiv preprint arXiv:2509.17871},
-  year    = {2025}
+      <pre class="bibtex"><code>@inproceedings{breckenridge2026bprivacy,
+  title     = {B-Privacy: Defining and Enforcing Privacy in Weighted Voting},
+  author    = {Breckenridge, Samuel and Vilardell, Dani and F{\'a}brega, Andr{\'e}s
+               and Zhao, Amy and McCorry, Patrick and Solari, Rafael and Juels, Ari},
+  booktitle = {35th USENIX Security Symposium (USENIX Security 26)},
+  year      = {2026},
+  publisher = {USENIX Association}
 }</code></pre>
     </section>
 
-    <footer class="footer">
-      <p>&copy; 2025 The B&#8209;Privacy authors &middot; Released under CC&#8209;BY&#8209;4.0</p>
-    </footer>
-
-  </main>
 </body>
 </html>
